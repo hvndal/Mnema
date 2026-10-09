@@ -1,29 +1,24 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { useControllerDiagnostics } from '../hooks/useControllerDiagnostics';
-import { ReactionLab } from './ReactionLab';
-import { TargetAcquisitionLab } from './TargetAcquisitionLab';
-import { ContinuousTrackingLab } from './ContinuousTrackingLab';
-import { SessionHistoryView } from './SessionHistoryView';
+import { HomePage } from './HomePage';
+import { ExperimentsHub } from './ExperimentsHub';
+import { ControllerLab } from './ControllerLab';
 import { ControllerIntegrationLab } from './ControllerIntegrationLab';
+import { SessionHistoryView } from './SessionHistoryView';
 import {
   createInitialStickCalibration,
-  updateCenterCalibration,
-  updateRangeCalibration,
 } from '../utils/stickCalibration';
-import {
-  exportTelemetryAsJSON,
-  exportTelemetryAsCSV,
-  type TelemetryExportPayload,
-} from '../utils/telemetryExport';
-import type { TelemetryFrame, StickCalibrationData } from '../types/telemetry';
+import type { StickCalibrationData } from '../types/telemetry';
+import { ExternalLink } from 'lucide-react';
+
+export type MainNavTab = 'home' | 'experiments' | 'controller_lab' | 'integrations' | 'history';
 
 export const ControllerDiagnosticsApp: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'reaction_lab' | 'target_acquisition' | 'continuous_tracking' | 'integration_lab' | 'history' | 'diagnostics'>('integration_lab');
+  const [activeTab, setActiveTab] = useState<MainNavTab>('home');
+  const [initialExperiment, setInitialExperiment] = useState<'reaction' | 'target_acquisition' | 'continuous_tracking'>('reaction');
+
   const {
     controller,
-    allConnectedGamepads,
-    activeSlot,
-    setActiveSlot,
     recentEvents,
     clearEventHistory,
     browserRenderHz,
@@ -32,10 +27,10 @@ export const ControllerDiagnosticsApp: React.FC = () => {
     visibilityInterrupted,
     interruptionCount,
   } = useControllerDiagnostics({
-    maxEventHistory: 50,
+    maxEventHistory: 40,
   });
 
-  // Stick calibration state
+  // Stick calibration state preserved across navigation
   const [leftStickCalib, setLeftStickCalib] = useState<StickCalibrationData>(() =>
     createInitialStickCalibration('Left Stick (Axes 0 & 1)', 0, 1)
   );
@@ -43,604 +38,172 @@ export const ControllerDiagnosticsApp: React.FC = () => {
     createInitialStickCalibration('Right Stick (Axes 2 & 3)', 2, 3)
   );
 
-  // Telemetry recording state
-  const [isRecordingTelemetry, setIsRecordingTelemetry] = useState<boolean>(false);
-  const [recordedFrames, setRecordedFrames] = useState<TelemetryFrame[]>([]);
-  const telemetryFrameCountRef = useRef<number>(0);
-  const lastChangeSeenRef = useRef<number>(performance.now());
-
-  // Record telemetry frame on each poll if active
-  useEffect(() => {
-    if (!isRecordingTelemetry || !controller) return;
-
-    const now = performance.now();
-    telemetryFrameCountRef.current++;
-
-    const newFrame: TelemetryFrame = {
-      sampleIndex: telemetryFrameCountRef.current,
-      sampleTime: now,
-      hardwareTimestamp: controller.timestamp,
-      hasStateChanged: stateChangeIntervalStats.lastChangeIntervalMs > 0,
-      timeSinceLastChangeMs: now - lastChangeSeenRef.current,
-      buttons: controller.buttons.map(b => ({
-        index: b.index,
-        pressed: b.pressed,
-        value: b.value,
-      })),
-      axes: controller.axes.map(a => ({
-        index: a.index,
-        value: a.value,
-      })),
-    };
-
-    setRecordedFrames(prev => {
-      const updated = [...prev, newFrame];
-      return updated.length > 2000 ? updated.slice(updated.length - 2000) : updated;
-    });
-  }, [controller, isRecordingTelemetry, stateChangeIntervalStats.lastChangeIntervalMs]);
-
-  // Calibration loop accumulation
-  useEffect(() => {
-    if (!controller) return;
-
-    // Left stick
-    const lx = controller.axes[0]?.value ?? 0;
-    const ly = controller.axes[1]?.value ?? 0;
-    if (leftStickCalib.isCalibratingCenter) {
-      setLeftStickCalib(prev => updateCenterCalibration(prev, lx, ly));
-    }
-    if (leftStickCalib.isCalibratingRange) {
-      setLeftStickCalib(prev => updateRangeCalibration(prev, lx, ly));
-    }
-
-    // Right stick
-    const rx = controller.axes[2]?.value ?? 0;
-    const ry = controller.axes[3]?.value ?? 0;
-    if (rightStickCalib.isCalibratingCenter) {
-      setRightStickCalib(prev => updateCenterCalibration(prev, rx, ry));
-    }
-    if (rightStickCalib.isCalibratingRange) {
-      setRightStickCalib(prev => updateRangeCalibration(prev, rx, ry));
-    }
-  }, [controller, leftStickCalib.isCalibratingCenter, leftStickCalib.isCalibratingRange, rightStickCalib.isCalibratingCenter, rightStickCalib.isCalibratingRange]);
-
-  // Export handlers
-  const handleExportJSON = () => {
-    const payload: TelemetryExportPayload = {
-      exportDate: new Date().toISOString(),
-      userAgent: navigator.userAgent,
-      controllerMetadata: controller
-        ? {
-            index: controller.index,
-            id: controller.id,
-            mapping: controller.mapping,
-            buttonCount: controller.buttons.length,
-            axisCount: controller.axes.length,
-            timestamp: controller.timestamp,
-          }
-        : null,
-      stickCalibration: {
-        leftStick: leftStickCalib,
-        rightStick: rightStickCalib,
-      },
-      telemetryFrames: recordedFrames,
-    };
-    exportTelemetryAsJSON(payload, `evofox-telemetry-${Date.now()}.json`);
-  };
-
-  const handleExportCSV = () => {
-    exportTelemetryAsCSV(recordedFrames, controller, `evofox-telemetry-${Date.now()}.csv`);
-  };
-
   return (
-    <div className="w-full max-w-7xl mx-auto p-4 flex flex-col gap-6 font-mono text-neutral-200">
-      {/* Header & Mode Switcher */}
-      <div className="border border-neutral-800 bg-neutral-900/90 p-4 rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-white tracking-wide">
-            EVOFOX ONE S // CONTROLLER PERFORMANCE LAB
-          </h1>
-          <p className="text-xs text-neutral-400 mt-0.5">
-            Psychophysics reaction-time measurement & hardware-input diagnostics.
-          </p>
+    <div className="min-h-screen bg-[#fafafc] text-zinc-900 flex flex-col font-sans">
+      {/* Top Global Navigation Bar */}
+      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-zinc-200">
+        <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+          {/* Brand */}
+          <div
+            onClick={() => setActiveTab('home')}
+            className="flex items-center gap-3 cursor-pointer select-none group"
+          >
+            <div className="w-9 h-9 rounded-xl bg-violet-600 text-white flex items-center justify-center font-black shadow-sm group-hover:bg-violet-700 transition-colors">
+              M
+            </div>
+            <div className="flex flex-col">
+              <span className="font-extrabold text-sm tracking-tight text-zinc-900">MNEMA</span>
+              <span className="text-[10px] text-zinc-500 font-medium -mt-0.5">Controller Psychophysics</span>
+            </div>
+          </div>
+
+          {/* Nav Items */}
+          <nav className="hidden md:flex items-center gap-1 bg-zinc-100 p-1 rounded-xl">
+            {[
+              { id: 'home', label: 'Home' },
+              { id: 'experiments', label: 'Experiments' },
+              { id: 'controller_lab', label: 'Controller Lab' },
+              { id: 'integrations', label: 'Integrations' },
+              { id: 'history', label: 'History & Cards' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as MainNavTab)}
+                className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  activeTab === tab.id
+                    ? 'bg-white text-zinc-900 shadow-xs'
+                    : 'text-zinc-600 hover:text-zinc-900'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+
+          {/* Right Status Badge */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-100 border border-zinc-200 text-xs">
+              <span className={`w-2 h-2 rounded-full ${controller ? 'bg-emerald-500 animate-pulse' : 'bg-amber-400'}`} />
+              <span className="font-medium text-zinc-700 text-[11px]">
+                {controller ? (controller.id.includes('EvoFox') ? 'EvoFox One S' : 'Gamepad Connected') : 'Awaiting Press'}
+              </span>
+            </div>
+
+            <span className="hidden sm:inline font-mono text-[11px] text-zinc-400 font-medium">
+              {browserRenderHz} FPS
+            </span>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            onClick={() => setActiveTab('reaction_lab')}
-            className={`px-3 py-1.5 rounded text-xs font-bold cursor-pointer ${
-              activeTab === 'reaction_lab'
-                ? 'bg-rose-600 text-white shadow'
-                : 'bg-neutral-950 text-neutral-400 border border-neutral-800 hover:text-white'
-            }`}
-          >
-            ⚡ REACTION LAB
-          </button>
-          <button
-            onClick={() => setActiveTab('target_acquisition')}
-            className={`px-3 py-1.5 rounded text-xs font-bold cursor-pointer ${
-              activeTab === 'target_acquisition'
-                ? 'bg-emerald-600 text-white shadow'
-                : 'bg-neutral-950 text-neutral-400 border border-neutral-800 hover:text-white'
-            }`}
-          >
-            🎯 TARGET ACQUISITION
-          </button>
-          <button
-            onClick={() => setActiveTab('continuous_tracking')}
-            className={`px-3 py-1.5 rounded text-xs font-bold cursor-pointer ${
-              activeTab === 'continuous_tracking'
-                ? 'bg-sky-600 text-white shadow'
-                : 'bg-neutral-950 text-neutral-400 border border-neutral-800 hover:text-white'
-            }`}
-          >
-            🔄 CONTINUOUS TRACKING
-          </button>
-          <button
-            onClick={() => setActiveTab('integration_lab')}
-            className={`px-3 py-1.5 rounded text-xs font-bold cursor-pointer ${
-              activeTab === 'integration_lab'
-                ? 'bg-purple-600 text-white shadow'
-                : 'bg-neutral-950 text-neutral-400 border border-neutral-800 hover:text-white'
-            }`}
-          >
-            🎛️ INTEGRATION LAB
-          </button>
-          <button
-            onClick={() => setActiveTab('history')}
-            className={`px-3 py-1.5 rounded text-xs font-bold cursor-pointer ${
-              activeTab === 'history'
-                ? 'bg-amber-600 text-white shadow'
-                : 'bg-neutral-950 text-neutral-400 border border-neutral-800 hover:text-white'
-            }`}
-          >
-            📊 SESSION HISTORY & COMPARISON
-          </button>
-          <button
-            onClick={() => setActiveTab('diagnostics')}
-            className={`px-3 py-1.5 rounded text-xs font-bold cursor-pointer ${
-              activeTab === 'diagnostics'
-                ? 'bg-neutral-200 text-neutral-950 font-bold'
-                : 'bg-neutral-950 text-neutral-400 border border-neutral-800 hover:text-white'
-            }`}
-          >
-            🔍 DIAGNOSTICS
-          </button>
+
+        {/* Mobile secondary tab row */}
+        <div className="flex md:hidden overflow-x-auto px-4 py-2 border-t border-zinc-100 gap-1 bg-white">
+          {[
+            { id: 'home', label: 'Home' },
+            { id: 'experiments', label: 'Experiments' },
+            { id: 'controller_lab', label: 'Controller' },
+            { id: 'integrations', label: 'Integrations' },
+            { id: 'history', label: 'History' },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as MainNavTab)}
+              className={`px-3 py-1 rounded-lg text-xs font-semibold whitespace-nowrap ${
+                activeTab === tab.id
+                  ? 'bg-violet-600 text-white'
+                  : 'bg-zinc-100 text-zinc-600'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
-      </div>
+      </header>
 
       {/* Visibility warning alert */}
       {visibilityInterrupted && (
-        <div className="p-3 bg-amber-950/70 border border-amber-700 text-amber-200 text-xs rounded">
-          ⚠️ <strong>BROWSER VISIBILITY INTERRUPTION DETECTED:</strong> Tab is currently hidden or inactive. Browser throttling (rAF suspension) pauses input polling. (Interrupt count: {interruptionCount})
+        <div className="max-w-6xl mx-auto w-full px-4 mt-3">
+          <div className="p-3 bg-amber-50 border border-amber-200 text-amber-800 text-xs rounded-xl flex items-center justify-between">
+            <span>
+              ⚠️ <strong>Tab Inactive / Hidden:</strong> Browser suspended frame polling while tab was obscured ({interruptionCount} interruptions).
+            </span>
+          </div>
         </div>
       )}
 
-      {/* Render Reaction Lab Tab */}
-      {activeTab === 'reaction_lab' && (
-        <ReactionLab controller={controller} browserRenderHz={browserRenderHz} />
-      )}
+      {/* Main Content Workspace */}
+      <main className="flex-1 max-w-6xl w-full mx-auto px-4 py-6">
+        {activeTab === 'home' && (
+          <HomePage
+            controller={controller}
+            browserRenderHz={browserRenderHz}
+            onNavigateTab={setActiveTab}
+            onSelectExperiment={setInitialExperiment}
+          />
+        )}
 
-      {/* Render Target Acquisition Lab Tab */}
-      {activeTab === 'target_acquisition' && (
-        <TargetAcquisitionLab controller={controller} browserRenderHz={browserRenderHz} />
-      )}
+        {activeTab === 'experiments' && (
+          <ExperimentsHub
+            controller={controller}
+            browserRenderHz={browserRenderHz}
+            initialSelected={initialExperiment}
+          />
+        )}
 
-      {/* Render Continuous Tracking Lab Tab */}
-      {activeTab === 'continuous_tracking' && (
-        <ContinuousTrackingLab controller={controller} browserRenderHz={browserRenderHz} />
-      )}
+        {activeTab === 'controller_lab' && (
+          <ControllerLab
+            controller={controller}
+            browserRenderHz={browserRenderHz}
+            leftStickCalib={leftStickCalib}
+            setLeftStickCalib={setLeftStickCalib}
+            rightStickCalib={rightStickCalib}
+            setRightStickCalib={setRightStickCalib}
+            recentEvents={recentEvents}
+            clearEventHistory={clearEventHistory}
+            stateChangeIntervalStats={stateChangeIntervalStats}
+            resetTelemetryStats={resetTelemetryStats}
+          />
+        )}
 
-      {/* Render Controller Integration Lab Tab */}
-      {activeTab === 'integration_lab' && (
-        <ControllerIntegrationLab controller={controller} browserRenderHz={browserRenderHz} />
-      )}
+        {activeTab === 'integrations' && (
+          <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm">
+            <ControllerIntegrationLab
+              controller={controller}
+              browserRenderHz={browserRenderHz}
+            />
+          </div>
+        )}
 
-      {/* Render Session History & Comparison Tab */}
-      {activeTab === 'history' && (
-        <SessionHistoryView />
-      )}
+        {activeTab === 'history' && (
+          <div className="bg-white border border-zinc-200 rounded-2xl p-6 shadow-sm">
+            <SessionHistoryView />
+          </div>
+        )}
+      </main>
 
-      {/* Render Hardware Diagnostics Tab */}
-      {activeTab === 'diagnostics' && (
-        <>
-
-      {/* Section 1: Controller Connection & Metadata */}
-      <div className="border border-neutral-800 bg-neutral-900/70 p-4 rounded-lg flex flex-col gap-3">
-        <div className="flex justify-between items-center border-b border-neutral-800 pb-2">
-          <span className="text-xs font-bold text-neutral-300 uppercase tracking-wider">
-            1. CONTROLLER CONNECTION & DEVICE PROFILE
-          </span>
+      {/* Light-first Clean Footer */}
+      <footer className="border-t border-zinc-200 bg-white py-6 mt-12 text-xs text-zinc-500">
+        <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className={`w-2.5 h-2.5 rounded-full ${controller ? 'bg-emerald-400 animate-pulse' : 'bg-rose-500'}`} />
-            <span className="text-xs font-bold">
-              {controller ? 'CONNECTED' : 'DISCONNECTED / WAITING'}
-            </span>
+            <span className="font-semibold text-zinc-700">Mnema</span>
+            <span>•</span>
+            <span>Controller-native psychophysics & precision testing</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <a
+              href="https://github.com/hvndal/Mnema"
+              target="_blank"
+              rel="noreferrer"
+              className="text-violet-600 hover:text-violet-700 font-semibold flex items-center gap-1"
+            >
+              GitHub Repository <ExternalLink className="w-3 h-3" />
+            </a>
+            <span>•</span>
+            <span>W3C Gamepad API</span>
           </div>
         </div>
-
-        {allConnectedGamepads.length > 1 && (
-          <div className="flex items-center gap-2 text-xs">
-            <span className="text-neutral-400">SELECT DEVICE SLOT:</span>
-            {allConnectedGamepads.map(gp => (
-              <button
-                key={gp.index}
-                onClick={() => setActiveSlot(gp.index)}
-                className={`px-2.5 py-1 rounded border text-xs cursor-pointer ${
-                  activeSlot === gp.index
-                    ? 'bg-neutral-200 text-neutral-950 border-white font-bold'
-                    : 'bg-neutral-950 text-neutral-400 border-neutral-800 hover:text-white'
-                }`}
-              >
-                Slot {gp.index}: {gp.id.slice(0, 20)}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {controller ? (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
-            <div className="p-2.5 bg-neutral-950 border border-neutral-800 rounded">
-              <span className="text-neutral-500 block mb-0.5">DEVICE IDENTIFIER (API)</span>
-              <span className="text-neutral-200 font-bold break-all">{controller.id}</span>
-            </div>
-            <div className="p-2.5 bg-neutral-950 border border-neutral-800 rounded">
-              <span className="text-neutral-500 block mb-0.5">W3C MAPPING STANDARD</span>
-              <span className="text-neutral-200 font-bold">
-                {controller.mapping ? `"${controller.mapping}"` : 'None (Raw / DirectInput)'}
-              </span>
-            </div>
-            <div className="p-2.5 bg-neutral-950 border border-neutral-800 rounded">
-              <span className="text-neutral-500 block mb-0.5">BUTTON CHANNELS</span>
-              <span className="text-neutral-200 font-bold">{controller.buttons.length} Channels Detected</span>
-            </div>
-            <div className="p-2.5 bg-neutral-950 border border-neutral-800 rounded">
-              <span className="text-neutral-500 block mb-0.5">ANALOG AXIS CHANNELS</span>
-              <span className="text-neutral-200 font-bold">{controller.axes.length} Axes Detected</span>
-            </div>
-          </div>
-        ) : (
-          <div className="p-4 bg-neutral-950 border border-neutral-800 rounded text-xs text-neutral-400 leading-relaxed">
-            No active gamepad detected on slot {activeSlot}.<br />
-            <strong>How to wake the connection:</strong> If your 2.4 GHz USB receiver is connected, press any button (e.g. A, B, or Home) on the EvoFox One S. Browsers require a user interaction on the gamepad before granting access to the Gamepad API.
-          </div>
-        )}
-      </div>
-
-      {/* Section 2: Live Input Inspector */}
-      {controller && (
-        <div className="border border-neutral-800 bg-neutral-900/70 p-4 rounded-lg flex flex-col gap-4">
-          <div className="flex justify-between items-center border-b border-neutral-800 pb-2">
-            <span className="text-xs font-bold text-neutral-300 uppercase tracking-wider">
-              2. LIVE INPUT INSPECTOR (INDEX-BASED, NO HARDCODED NAMES)
-            </span>
-            <span className="text-xs text-neutral-500">
-              API Timestamp: {controller.timestamp.toFixed(2)} ms
-            </span>
-          </div>
-
-          {/* Button array */}
-          <div>
-            <span className="text-xs text-neutral-400 block mb-2 font-bold">
-              DIGITAL & ANALOG BUTTON MATRIX:
-            </span>
-            <div className="grid grid-cols-3 sm:grid-cols-6 md:grid-cols-9 gap-2">
-              {controller.buttons.map(btn => {
-                const isHeld = btn.pressed || btn.value > 0.1;
-                return (
-                  <div
-                    key={btn.index}
-                    className={`p-2 rounded border flex flex-col items-center justify-center transition-colors ${
-                      isHeld
-                        ? 'bg-emerald-950 border-emerald-500 text-emerald-200 font-bold'
-                        : 'bg-neutral-950 border-neutral-800 text-neutral-400'
-                    }`}
-                  >
-                    <span className="text-xs">Index [{btn.index}]</span>
-                    <span className="text-[11px] mt-0.5">
-                      {btn.pressed ? 'PRESSED' : 'RELEASED'}
-                    </span>
-                    <span className="text-[10px] opacity-75 font-mono">
-                      val: {btn.value.toFixed(2)}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Axes live sliders */}
-          <div>
-            <span className="text-xs text-neutral-400 block mb-2 font-bold">
-              ANALOG AXES (NUMERICAL VALUE & VISUAL DEFLECTION):
-            </span>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-              {controller.axes.map(axis => {
-                const pct = ((axis.value + 1) / 2) * 100;
-                return (
-                  <div key={axis.index} className="p-2.5 bg-neutral-950 border border-neutral-800 rounded flex flex-col gap-1.5">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-neutral-400">Axis [{axis.index}]</span>
-                      <span className="font-bold text-neutral-200">{axis.value.toFixed(4)}</span>
-                    </div>
-                    {/* Visual meter */}
-                    <div className="w-full h-2 bg-neutral-800 rounded-full relative overflow-hidden">
-                      <div
-                        className="h-full bg-emerald-500 absolute top-0"
-                        style={{
-                          left: axis.value >= 0 ? '50%' : `${pct}%`,
-                          width: `${Math.abs(axis.value) * 50}%`,
-                        }}
-                      />
-                      <div className="w-0.5 h-full bg-white absolute left-1/2 top-0" />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Transition Event History Log */}
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-xs text-neutral-400 font-bold">
-                RECENT INPUT TRANSITIONS (CHRONOLOGICAL EVENT LOG):
-              </span>
-              <button
-                onClick={clearEventHistory}
-                className="text-[11px] text-neutral-400 hover:text-white underline cursor-pointer"
-              >
-                Clear History
-              </button>
-            </div>
-            <div className="h-32 overflow-y-auto bg-neutral-950 border border-neutral-800 p-2 rounded text-[11px] flex flex-col gap-1">
-              {recentEvents.length === 0 ? (
-                <span className="text-neutral-600 italic">No transitions recorded yet. Press buttons or move sticks to observe events.</span>
-              ) : (
-                recentEvents.map(evt => (
-                  <div key={evt.id} className="flex items-center gap-2">
-                    <span className="text-neutral-500">[{evt.timestamp.toFixed(1)}ms]</span>
-                    <span className={
-                      evt.type === 'button_down' ? 'text-emerald-400 font-bold' :
-                      evt.type === 'button_up' ? 'text-neutral-400' : 'text-sky-400'
-                    }>
-                      {evt.description}
-                    </span>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Section 3: Stick Calibration & Deadzone Calculation */}
-      <div className="border border-neutral-800 bg-neutral-900/70 p-4 rounded-lg flex flex-col gap-4">
-        <div className="border-b border-neutral-800 pb-2">
-          <span className="text-xs font-bold text-neutral-300 uppercase tracking-wider">
-            3. ANALOG STICK CALIBRATION & SOFTWARE DEAD ZONE ENGINE
-          </span>
-          <p className="text-[11px] text-neutral-500 mt-1">
-            <strong>Hardware vs Observed distinction:</strong> The Gamepad API reports normalized float coordinates. Physical stick centering springs always have mechanical hysteresis. Use this to measure true resting drift and full physical throw.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Left Stick Card */}
-          <div className="p-3 bg-neutral-950 border border-neutral-800 rounded flex flex-col gap-3">
-            <span className="text-xs font-bold text-neutral-300">{leftStickCalib.label}</span>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="p-2 bg-neutral-900 rounded">
-                <span className="text-neutral-500 block text-[10px]">RESTING CENTER OFFSET</span>
-                <span className="font-bold text-neutral-200">
-                  X: {leftStickCalib.restingCenter.x} | Y: {leftStickCalib.restingCenter.y}
-                </span>
-                <span className="text-[10px] text-neutral-500 block mt-0.5">
-                  Noise: ±{leftStickCalib.restingNoise.x} / ±{leftStickCalib.restingNoise.y}
-                </span>
-              </div>
-              <div className="p-2 bg-neutral-900 rounded">
-                <span className="text-neutral-500 block text-[10px]">OBSERVED EXTENTS (MIN / MAX)</span>
-                <span className="font-bold text-neutral-200">
-                  X: [{leftStickCalib.observedMin.x}, {leftStickCalib.observedMax.x}]
-                </span>
-                <span className="font-bold text-neutral-200 block">
-                  Y: [{leftStickCalib.observedMin.y}, {leftStickCalib.observedMax.y}]
-                </span>
-              </div>
-            </div>
-
-            <div className="p-2 bg-neutral-900/80 border border-neutral-800 rounded flex justify-between items-center text-xs">
-              <div>
-                <span className="text-neutral-400 block text-[11px]">CALCULATED DEAD ZONE CEILING:</span>
-                <span className="text-[10px] text-neutral-500">Filters 100% of resting drift</span>
-              </div>
-              <span className="text-emerald-400 font-bold text-sm">
-                {(leftStickCalib.recommendedDeadzone * 100).toFixed(1)}% ({leftStickCalib.recommendedDeadzone})
-              </span>
-            </div>
-
-            {/* Actions */}
-            <div className="flex gap-2">
-              <button
-                onClick={() => setLeftStickCalib(prev => ({ ...prev, isCalibratingCenter: !prev.isCalibratingCenter }))}
-                className={`flex-1 py-1.5 px-2 rounded border text-xs cursor-pointer font-bold ${
-                  leftStickCalib.isCalibratingCenter
-                    ? 'bg-rose-950 text-rose-300 border-rose-600 animate-pulse'
-                    : 'bg-neutral-900 text-neutral-300 border-neutral-700 hover:bg-neutral-800'
-                }`}
-              >
-                {leftStickCalib.isCalibratingCenter ? 'STOP REST SAMPLING' : 'SAMPLE RESTING POSITION'}
-              </button>
-              <button
-                onClick={() => setLeftStickCalib(prev => ({ ...prev, isCalibratingRange: !prev.isCalibratingRange }))}
-                className={`flex-1 py-1.5 px-2 rounded border text-xs cursor-pointer font-bold ${
-                  leftStickCalib.isCalibratingRange
-                    ? 'bg-rose-950 text-rose-300 border-rose-600 animate-pulse'
-                    : 'bg-neutral-900 text-neutral-300 border-neutral-700 hover:bg-neutral-800'
-                }`}
-              >
-                {leftStickCalib.isCalibratingRange ? 'STOP RANGE RECORDING' : 'RECORD FULL RANGE'}
-              </button>
-            </div>
-          </div>
-
-          {/* Right Stick Card */}
-          <div className="p-3 bg-neutral-950 border border-neutral-800 rounded flex flex-col gap-3">
-            <span className="text-xs font-bold text-neutral-300">{rightStickCalib.label}</span>
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <div className="p-2 bg-neutral-900 rounded">
-                <span className="text-neutral-500 block text-[10px]">RESTING CENTER OFFSET</span>
-                <span className="font-bold text-neutral-200">
-                  X: {rightStickCalib.restingCenter.x} | Y: {rightStickCalib.restingCenter.y}
-                </span>
-                <span className="text-[10px] text-neutral-500 block mt-0.5">
-                  Noise: ±{rightStickCalib.restingNoise.x} / ±{rightStickCalib.restingNoise.y}
-                </span>
-              </div>
-              <div className="p-2 bg-neutral-900 rounded">
-                <span className="text-neutral-500 block text-[10px]">OBSERVED EXTENTS (MIN / MAX)</span>
-                <span className="font-bold text-neutral-200">
-                  X: [{rightStickCalib.observedMin.x}, {rightStickCalib.observedMax.x}]
-                </span>
-                <span className="font-bold text-neutral-200 block">
-                  Y: [{rightStickCalib.observedMin.y}, {rightStickCalib.observedMax.y}]
-                </span>
-              </div>
-            </div>
-
-            <div className="p-2 bg-neutral-900/80 border border-neutral-800 rounded flex justify-between items-center text-xs">
-              <div>
-                <span className="text-neutral-400 block text-[11px]">CALCULATED DEAD ZONE CEILING:</span>
-                <span className="text-[10px] text-neutral-500">Filters 100% of resting drift</span>
-              </div>
-              <span className="text-emerald-400 font-bold text-sm">
-                {(rightStickCalib.recommendedDeadzone * 100).toFixed(1)}% ({rightStickCalib.recommendedDeadzone})
-              </span>
-            </div>
-
-            {/* Actions */}
-            <div className="flex gap-2">
-              <button
-                onClick={() => setRightStickCalib(prev => ({ ...prev, isCalibratingCenter: !prev.isCalibratingCenter }))}
-                className={`flex-1 py-1.5 px-2 rounded border text-xs cursor-pointer font-bold ${
-                  rightStickCalib.isCalibratingCenter
-                    ? 'bg-rose-950 text-rose-300 border-rose-600 animate-pulse'
-                    : 'bg-neutral-900 text-neutral-300 border-neutral-700 hover:bg-neutral-800'
-                }`}
-              >
-                {rightStickCalib.isCalibratingCenter ? 'STOP REST SAMPLING' : 'SAMPLE RESTING POSITION'}
-              </button>
-              <button
-                onClick={() => setRightStickCalib(prev => ({ ...prev, isCalibratingRange: !prev.isCalibratingRange }))}
-                className={`flex-1 py-1.5 px-2 rounded border text-xs cursor-pointer font-bold ${
-                  rightStickCalib.isCalibratingRange
-                    ? 'bg-rose-950 text-rose-300 border-rose-600 animate-pulse'
-                    : 'bg-neutral-900 text-neutral-300 border-neutral-700 hover:bg-neutral-800'
-                }`}
-              >
-                {rightStickCalib.isCalibratingRange ? 'STOP RANGE RECORDING' : 'RECORD FULL RANGE'}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Section 4: Input Telemetry & Sampling Interval Analytics */}
-      <div className="border border-neutral-800 bg-neutral-900/70 p-4 rounded-lg flex flex-col gap-4">
-        <div className="border-b border-neutral-800 pb-2 flex justify-between items-center">
-          <div>
-            <span className="text-xs font-bold text-neutral-300 uppercase tracking-wider">
-              4. INPUT TELEMETRY & STATE CHANGE INTERVALS
-            </span>
-            <p className="text-[11px] text-neutral-500 mt-0.5">
-              Distinguishes browser frame ticks from actual observed input state changes to prevent misrepresenting rAF as controller USB polling rate.
-            </p>
-          </div>
-          <button
-            onClick={resetTelemetryStats}
-            className="text-[11px] text-neutral-400 hover:text-white underline cursor-pointer"
-          >
-            Reset Metrics
-          </button>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-          <div className="p-2.5 bg-neutral-950 border border-neutral-800 rounded">
-            <span className="text-neutral-500 block mb-0.5">OBSERVED INPUT CHANGES</span>
-            <span className="text-white font-bold">{stateChangeIntervalStats.observedChanges} Events</span>
-          </div>
-          <div className="p-2.5 bg-neutral-950 border border-neutral-800 rounded">
-            <span className="text-neutral-500 block mb-0.5">MEAN CHANGE INTERVAL</span>
-            <span className="text-emerald-400 font-bold">
-              {stateChangeIntervalStats.meanIntervalMs > 0 ? `${stateChangeIntervalStats.meanIntervalMs} ms` : 'Awaiting input'}
-            </span>
-          </div>
-          <div className="p-2.5 bg-neutral-950 border border-neutral-800 rounded">
-            <span className="text-neutral-500 block mb-0.5">INTERVAL VARIABILITY (STD DEV)</span>
-            <span className="text-sky-400 font-bold">
-              ±{stateChangeIntervalStats.stdDevMs} ms
-            </span>
-          </div>
-          <div className="p-2.5 bg-neutral-950 border border-neutral-800 rounded">
-            <span className="text-neutral-500 block mb-0.5">LAST OBSERVED INTERVAL</span>
-            <span className="text-neutral-200 font-bold">
-              {stateChangeIntervalStats.lastChangeIntervalMs} ms
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Section 5: Telemetry Stream Export */}
-      <div className="border border-neutral-800 bg-neutral-900/70 p-4 rounded-lg flex flex-col sm:flex-row justify-between items-center gap-4">
-        <div>
-          <span className="text-xs font-bold text-neutral-300 uppercase tracking-wider block">
-            5. TELEMETRY DATA EXPORT (RAW RECORDINGS)
-          </span>
-          <span className="text-xs text-neutral-400">
-            Recorded frames in buffer: <strong className="text-white">{recordedFrames.length}</strong> (Max 2,000 frames)
-          </span>
-        </div>
-
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => {
-              if (isRecordingTelemetry) {
-                setIsRecordingTelemetry(false);
-              } else {
-                setRecordedFrames([]);
-                telemetryFrameCountRef.current = 0;
-                lastChangeSeenRef.current = performance.now();
-                setIsRecordingTelemetry(true);
-              }
-            }}
-            className={`px-3 py-2 rounded border text-xs font-bold cursor-pointer transition-colors ${
-              isRecordingTelemetry
-                ? 'bg-rose-950 text-rose-300 border-rose-600 animate-pulse'
-                : 'bg-emerald-950 text-emerald-300 border-emerald-700 hover:bg-emerald-900'
-            }`}
-          >
-            {isRecordingTelemetry ? 'STOP RECORDING' : 'RECORD TELEMETRY STREAM'}
-          </button>
-
-          <button
-            onClick={handleExportCSV}
-            disabled={recordedFrames.length === 0}
-            className="px-3 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-neutral-200 rounded text-xs font-bold cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            EXPORT CSV
-          </button>
-
-          <button
-            onClick={handleExportJSON}
-            disabled={recordedFrames.length === 0 && !controller}
-            className="px-3 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 text-neutral-200 rounded text-xs font-bold cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            EXPORT JSON
-          </button>
-        </div>
-      </div>
-        </>
-      )}
+      </footer>
     </div>
   );
 };
+
+export default ControllerDiagnosticsApp;

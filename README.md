@@ -1,49 +1,94 @@
 # Mnema
 
-> Precision reaction-time testing designed ground-up for gamepad controllers. No pseudo-neuroscience, no personality quizzes—just clean psychophysics, millisecond-accurate measurements, and raw performance data.
+> **Controller Psychophysics & Precision Measurement Lab**  
+> Ground-up browser-based performance testing, diagnostic telemetry, and creative hardware mapping for the EvoFox One S and standard gamepads.
+
+Live deployment: [https://hvndal.github.io/Mnema/](https://hvndal.github.io/Mnema/)
 
 ---
 
 ## ⚡ The Philosophy
 
-Most online reaction tests are flimsy web gimmicks wrapped in faux-scientific claims about IQ, brain age, or ADHD.
+Most online reaction tests are flimsy web gimmicks wrapped in faux-scientific claims about IQ or brain age.
 
-**Mnema** strips all of that away. It focuses purely on rigorous experimental psychophysics and feel:
-- **Controller-First Experience**: Built natively around gamepad input (e.g., EvoFox and standard controllers) via the Gamepad API polling loop, not treated as a desktop afterthought.
-- **Microsecond / Sub-Frame Precision**: Precise timing loops, input timestamps, and false-start penalties.
-- **Deep Performance Analytics**: Goes far beyond a naive average—surfaces mean, median, standard deviation (variability/jitter), fastest reactions, fatigue curves, and response time distributions.
-- **Dynamic Test Conditions**: Unpredictable latency intervals, simple vs. choice reaction time (CRT) paradigms, and visual stimulus variations.
+**Mnema** strips all of that away. It focuses purely on rigorous experimental psychophysics, sub-millisecond precision, and controller hardware feel:
+- **Controller-First Experience**: Built natively around gamepad input via the browser Gamepad API polling loop (`requestAnimationFrame` + `performance.now()`), optimized for the EvoFox One S and X-Input/DirectInput controllers.
+- **Microsecond Precision & Anti-Anticipation**: Randomized foreperiod delays (1500ms–4000ms), false-start tracking, and edge-triggered button state transitions.
+- **Deep Performance Analytics**: Surfaces mean, median, standard deviation (variability/jitter), fastest reactions, fatigue curves, path efficiency, and response distributions.
 - **Honest Methodology**: Transparent documentation of input lag, browser refresh intervals, and display latency without marketing fluff.
-- **Export & Share**: Beautifully rendered, downloadable trial report cards with permalinks and challenge cards to flex on friends.
+- **Export & Share**: High-fidelity PNG result cards, JSON session exports, CSV telemetry dumps, and historical comparisons.
 
 ---
 
-## 🎮 Features
+## 🎮 Modules & Capabilities
 
-- [ ] **Gamepad Native (Standard Gamepad API)**
-  - Direct polling loop (`requestAnimationFrame` + input timestamps) optimized for gamepads like EvoFox.
-  - Low-latency tactile feedback (Game Controller Rumble / Vibration API where supported).
-  - Full UI navigable via D-pad / Face buttons / Triggers.
-- [ ] **Psychophysics & Reaction Paradigms**
-  - **Simple Reaction Time (SRT)**: Wait for trigger stimulus with randomized foreperiods (anti-anticipation jitter).
-  - **Choice Reaction Time (CRT)**: Multi-button mapping (e.g. D-pad directions or A/B/X/Y) testing cognitive processing speed.
-  - **Go / No-Go**: Inhibitory control trials.
-- [ ] **Statistical Breakdown**
-  - Mean & Median latency (ms)
-  - Interquartile Range & Standard Deviation (Consistency / Neuromotor stability)
-  - False starts / Anticipation errors count
-  - Trial-over-trial fatigue / Warmup degradation trends
-- [ ] **High-Fidelity Share Cards**
-  - Canvas-generated crisp challenge cards with run summary, distribution curve, and replay link.
+### 1. Controller Lab & Diagnostics
+- **Interactive Gamepad Schematic**: Live 2D vector visualizer highlighting face buttons, D-pad, shoulder bumpers, and analog stick displacement in real time.
+- **2D Stick Calibration**: Resting center drift detection, 360° range bounding box recording, and recommended dead-zone calculation.
+- **Raw Channel Telemetry**: Live polling frequency monitor, state-change interval metrics, and event log.
+
+### 2. Psychophysics Reaction Lab
+- **Simple Reaction Time (SRT)**: Measure raw sensory-motor latency with randomized foreperiods.
+- **Choice Reaction Time (CRT)**: Measure cognitive decision latency across randomized button prompts (A, B, X, Y).
+- **Go / No-Go Paradigm**: Measure inhibitory motor control with non-target distractor signals.
+
+### 3. Precision & Tracking Lab
+- **Target Acquisition**: Measure motor targeting speed, path efficiency (Euclidean vs actual trajectory), and endpoint spatial error under Fitts's Law paradigms.
+- **Continuous Tracking**: Quantify analog stick smooth pursuit accuracy following a moving target, calculating Root Mean Square Error (RMSE) and Time-in-Target percentage.
+
+### 4. Controller Integration Engine
+- **MIDI Synthesizer**: Map face buttons to musical notes and analog sticks to pitch bend / modulation wheels.
+- **Media Controller**: Control volume, scrubber, and playback controls.
+- **NLE Video Scrubbing**: Jog wheel simulation for video editing timelines.
+- **Robotics / Telemetry**: Broadcast high-resolution normalized axes over WebSocket streams.
+
+### 5. Session History & Shareable Challenge Cards
+- **Local Persistence**: IndexedDB client-side database storing trial-by-trial logs, controller metadata, and timestamps across browser sessions.
+- **Comparative Analysis**: Performance progression deltas comparing baseline vs recent sessions.
+- **Downloadable Challenge Cards**: Instant HTML5 Canvas export of high-resolution graphic cards with performance metrics.
 
 ---
 
-## 🛠 Tech Stack (Proposed)
+## 🛠 Tech Stack
 
-- **Frontend**: Vite + React / TypeScript (or lightweight vanilla / Solid for micro-latency overhead)
-- **Input Engine**: Web Gamepad API + High-Resolution Time (`performance.now()`)
-- **Visuals & Charts**: Minimalist, high-framerate rendering (Tailwind CSS, Canvas/SVG distributions)
-- **Share Generator**: HTML5 Canvas rendering engine for instant `.png` generation
+- **Framework**: React 19 + TypeScript + Vite 8
+- **Styling**: Tailwind CSS v4 (Light-first editorial aesthetic)
+- **Input API**: Browser Gamepad API (`navigator.getGamepads()`)
+- **Icons**: Lucide React
+- **Storage**: IndexedDB (`mnema_sessions_db`)
+- **Exports**: HTML5 Canvas (`toDataURL`), Blob JSON/CSV downloads
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+- Node.js 20+
+- EvoFox One S or any standard USB/Wireless Gamepad (Xbox, PlayStation, or generic HID)
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/hvndal/Mnema.git
+
+# Enter repository directory
+cd Mnema
+
+# Install dependencies
+npm install
+
+# Start Vite local development server
+npm run dev
+
+# Run self-test verification suites
+npx tsx -e "import { runPrecisionTrackingSelfTests } from './src/utils/precisionTracking.test.ts'; runPrecisionTrackingSelfTests();"
+npx tsx -e "import { runIntegrationEngineSelfTests } from './src/utils/controllerMappingEngine.test.ts'; runIntegrationEngineSelfTests();"
+npx tsx -e "import { runHistoryAndComparisonSelfTests } from './src/utils/sessionComparison.test.ts'; runHistoryAndComparisonSelfTests();"
+
+# Build for production
+npm run build
+```
 
 ---
 
