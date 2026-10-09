@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useControllerDiagnostics } from '../hooks/useControllerDiagnostics';
+import { ReactionLab } from './ReactionLab';
+import { TargetAcquisitionLab } from './TargetAcquisitionLab';
+import { ContinuousTrackingLab } from './ContinuousTrackingLab';
 import {
   createInitialStickCalibration,
   updateCenterCalibration,
@@ -13,6 +16,7 @@ import {
 import type { TelemetryFrame, StickCalibrationData } from '../types/telemetry';
 
 export const ControllerDiagnosticsApp: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<'reaction_lab' | 'target_acquisition' | 'continuous_tracking' | 'diagnostics'>('target_acquisition');
   const {
     controller,
     allConnectedGamepads,
@@ -128,21 +132,57 @@ export const ControllerDiagnosticsApp: React.FC = () => {
 
   return (
     <div className="w-full max-w-7xl mx-auto p-4 flex flex-col gap-6 font-mono text-neutral-200">
-      {/* Header */}
+      {/* Header & Mode Switcher */}
       <div className="border border-neutral-800 bg-neutral-900/90 p-4 rounded-lg flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
           <h1 className="text-xl font-bold text-white tracking-wide">
-            EVOFOX ONE S // CONTROLLER DIAGNOSTICS & TELEMETRY
+            EVOFOX ONE S // CONTROLLER PERFORMANCE LAB
           </h1>
           <p className="text-xs text-neutral-400 mt-0.5">
-            Hardware input inspection, transition event logging, software deadzone calibration & timing telemetry.
+            Psychophysics reaction-time measurement & hardware-input diagnostics.
           </p>
         </div>
-        <div className="flex items-center gap-2 text-xs">
-          <span className="text-neutral-500">RENDER SAMPLING:</span>
-          <span className="px-2 py-0.5 bg-neutral-950 border border-neutral-700 font-bold text-emerald-400 rounded">
-            {browserRenderHz} FPS
-          </span>
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={() => setActiveTab('reaction_lab')}
+            className={`px-3 py-1.5 rounded text-xs font-bold cursor-pointer ${
+              activeTab === 'reaction_lab'
+                ? 'bg-rose-600 text-white shadow'
+                : 'bg-neutral-950 text-neutral-400 border border-neutral-800 hover:text-white'
+            }`}
+          >
+            ⚡ REACTION LAB
+          </button>
+          <button
+            onClick={() => setActiveTab('target_acquisition')}
+            className={`px-3 py-1.5 rounded text-xs font-bold cursor-pointer ${
+              activeTab === 'target_acquisition'
+                ? 'bg-emerald-600 text-white shadow'
+                : 'bg-neutral-950 text-neutral-400 border border-neutral-800 hover:text-white'
+            }`}
+          >
+            🎯 TARGET ACQUISITION
+          </button>
+          <button
+            onClick={() => setActiveTab('continuous_tracking')}
+            className={`px-3 py-1.5 rounded text-xs font-bold cursor-pointer ${
+              activeTab === 'continuous_tracking'
+                ? 'bg-sky-600 text-white shadow'
+                : 'bg-neutral-950 text-neutral-400 border border-neutral-800 hover:text-white'
+            }`}
+          >
+            🔄 CONTINUOUS TRACKING
+          </button>
+          <button
+            onClick={() => setActiveTab('diagnostics')}
+            className={`px-3 py-1.5 rounded text-xs font-bold cursor-pointer ${
+              activeTab === 'diagnostics'
+                ? 'bg-neutral-200 text-neutral-950 font-bold'
+                : 'bg-neutral-950 text-neutral-400 border border-neutral-800 hover:text-white'
+            }`}
+          >
+            🔍 DIAGNOSTICS
+          </button>
         </div>
       </div>
 
@@ -152,6 +192,25 @@ export const ControllerDiagnosticsApp: React.FC = () => {
           ⚠️ <strong>BROWSER VISIBILITY INTERRUPTION DETECTED:</strong> Tab is currently hidden or inactive. Browser throttling (rAF suspension) pauses input polling. (Interrupt count: {interruptionCount})
         </div>
       )}
+
+      {/* Render Reaction Lab Tab */}
+      {activeTab === 'reaction_lab' && (
+        <ReactionLab controller={controller} browserRenderHz={browserRenderHz} />
+      )}
+
+      {/* Render Target Acquisition Lab Tab */}
+      {activeTab === 'target_acquisition' && (
+        <TargetAcquisitionLab controller={controller} browserRenderHz={browserRenderHz} />
+      )}
+
+      {/* Render Continuous Tracking Lab Tab */}
+      {activeTab === 'continuous_tracking' && (
+        <ContinuousTrackingLab controller={controller} browserRenderHz={browserRenderHz} />
+      )}
+
+      {/* Render Hardware Diagnostics Tab */}
+      {activeTab === 'diagnostics' && (
+        <>
 
       {/* Section 1: Controller Connection & Metadata */}
       <div className="border border-neutral-800 bg-neutral-900/70 p-4 rounded-lg flex flex-col gap-3">
@@ -548,6 +607,8 @@ export const ControllerDiagnosticsApp: React.FC = () => {
           </button>
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 };
