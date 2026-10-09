@@ -1,4 +1,5 @@
 import type { StoredSessionRecord } from '../types/history';
+import { APP_CONFIG } from '../config';
 
 export type CardFormat = 'square' | 'portrait';
 
@@ -20,7 +21,7 @@ export interface GenerateResultCardOptions {
  */
 export function generateResultCardCanvas(options: GenerateResultCardOptions): Promise<string> {
   return new Promise((resolve) => {
-    const { session, format, selectedMetrics, publicWebsiteUrl = 'github.com/hvndal/Mnema' } = options;
+    const { session, format, selectedMetrics, publicWebsiteUrl = APP_CONFIG.publicWebsiteUrl } = options;
 
     const width = 1080;
     const height = format === 'square' ? 1080 : 1920;
