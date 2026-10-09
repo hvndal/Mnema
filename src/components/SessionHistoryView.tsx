@@ -128,6 +128,18 @@ export const SessionHistoryView: React.FC = () => {
         m1 = `TimeInTarget: ${s.trackingStats.timeInTargetPercentage}%`;
         m2 = `RMSE: ${s.trackingStats.rmseTrackingErrorPx}px`;
         m3 = `MeanError: ${s.trackingStats.meanTrackingErrorPx}px`;
+      } else if (s.experimentType === 'phone_steadiness' && s.steadinessResult) {
+        m1 = `PeakFreq: ${s.steadinessResult.peakFrequencyHz}Hz`;
+        m2 = `RMSAccel: ${s.steadinessResult.rmsAcceleration}m/s²`;
+        m3 = `Score: ${s.steadinessResult.steadinessScore}/100`;
+      } else if (s.experimentType === 'phone_balance' && s.balanceResult) {
+        m1 = `RombergRatio: ${s.balanceResult.rombergRatio}x`;
+        m2 = `VisualReliance: ${s.balanceResult.visualReliancePercent}%`;
+        m3 = `Stability: ${s.balanceResult.posturalStabilityScore}/100`;
+      } else if (s.experimentType === 'phone_proprioception' && s.proprioceptionResult) {
+        m1 = `AbsError: ${s.proprioceptionResult.meanAbsoluteErrorDeg}deg`;
+        m2 = `Tendency: ${s.proprioceptionResult.tendency}`;
+        m3 = `Score: ${s.proprioceptionResult.accuracyScore}/100`;
       }
 
       return [
@@ -414,6 +426,30 @@ export const SessionHistoryView: React.FC = () => {
                           <span>Time in Target: <strong className="text-emerald-400">{session.trackingStats.timeInTargetPercentage}%</strong></span>
                           <span>RMSE: <strong className="text-sky-400">{session.trackingStats.rmseTrackingErrorPx} px</strong></span>
                           <span>Mean Error: <strong>{session.trackingStats.meanTrackingErrorPx} px</strong></span>
+                        </>
+                      )}
+                      {session.experimentType === 'phone_steadiness' && session.steadinessResult && (
+                        <>
+                          <span>Peak Freq: <strong className="text-purple-400">{session.steadinessResult.peakFrequencyHz} Hz</strong></span>
+                          <span>Shake RMS: <strong className="text-emerald-400">{session.steadinessResult.rmsAcceleration} m/s²</strong></span>
+                          <span>Score: <strong className="text-amber-400">{session.steadinessResult.steadinessScore}/100</strong></span>
+                          <span className="text-neutral-400">({session.steadinessResult.classification})</span>
+                        </>
+                      )}
+                      {session.experimentType === 'phone_balance' && session.balanceResult && (
+                        <>
+                          <span>Romberg Ratio: <strong className="text-purple-400">{session.balanceResult.rombergRatio}x</strong></span>
+                          <span>Visual Reliance: <strong className="text-rose-400">{session.balanceResult.visualReliancePercent}%</strong></span>
+                          <span>Stability: <strong className="text-emerald-400">{session.balanceResult.posturalStabilityScore}/100</strong></span>
+                          <span className="text-neutral-400">({session.balanceResult.classification})</span>
+                        </>
+                      )}
+                      {session.experimentType === 'phone_proprioception' && session.proprioceptionResult && (
+                        <>
+                          <span>Mean Error: <strong className="text-emerald-400">{session.proprioceptionResult.meanAbsoluteErrorDeg}°</strong></span>
+                          <span>Tendency: <strong className="text-amber-400">{session.proprioceptionResult.tendency}</strong></span>
+                          <span>Score: <strong className="text-purple-400">{session.proprioceptionResult.accuracyScore}/100</strong></span>
+                          <span className="text-neutral-400">({session.proprioceptionResult.rating})</span>
                         </>
                       )}
                     </div>

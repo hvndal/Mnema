@@ -47,6 +47,30 @@ export const ResultCardModal: React.FC<ResultCardModalProps> = ({ session, onClo
         { label: 'Left Deadzone', value: `${Math.round(s.leftStick.recommendedDeadzone * 100)}`, unit: '%' },
         { label: 'Right Deadzone', value: `${Math.round(s.rightStick.recommendedDeadzone * 100)}`, unit: '%' },
       ];
+    } else if (session.experimentType === 'phone_steadiness' && session.steadinessResult) {
+      const s = session.steadinessResult;
+      return [
+        { label: 'Steadiness Score', value: `${s.steadinessScore}`, unit: '/100' },
+        { label: 'Tremor Peak', value: `${s.peakFrequencyHz}`, unit: 'Hz' },
+        { label: 'RMS Shake', value: `${s.rmsAcceleration}`, unit: 'm/s²' },
+        { label: 'Sample Rate', value: `${s.effectiveSamplingRateHz}`, unit: 'Hz' },
+      ];
+    } else if (session.experimentType === 'phone_balance' && session.balanceResult) {
+      const s = session.balanceResult;
+      return [
+        { label: 'Romberg Ratio', value: `${s.rombergRatio}`, unit: 'x' },
+        { label: 'Visual Reliance', value: `${s.visualReliancePercent}`, unit: '%' },
+        { label: 'Stability Score', value: `${s.posturalStabilityScore}`, unit: '/100' },
+        { label: 'Closed Sway Rate', value: `${s.eyesClosed.meanVelocity}`, unit: '°/s' },
+      ];
+    } else if (session.experimentType === 'phone_proprioception' && session.proprioceptionResult) {
+      const s = session.proprioceptionResult;
+      return [
+        { label: 'Mean Error', value: `${s.meanAbsoluteErrorDeg}`, unit: '°' },
+        { label: 'Accuracy Score', value: `${s.accuracyScore}`, unit: '/100' },
+        { label: 'Bias Tendency', value: `${s.tendency}`, unit: '' },
+        { label: 'Signed Error', value: `${s.meanSignedErrorDeg}`, unit: '°' },
+      ];
     }
     return [];
   }, [session]);

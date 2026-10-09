@@ -82,6 +82,9 @@ export function generateResultCardCanvas(options: GenerateResultCardOptions): Pr
       target_acquisition: 'TARGET ACQUISITION (FITTS)',
       continuous_tracking: 'CONTINUOUS PURSUIT TRACKING',
       diagnostics_calibration: 'HARDWARE CALIBRATION PROFILE',
+      phone_steadiness: 'ARM-LENGTH STEADINESS (TREMOR FFT)',
+      phone_balance: 'VESTIBULAR BALANCE (ROMBERG)',
+      phone_proprioception: 'JOINT PROPRIOCEPTION (BLIND TILT)',
     };
     const title = experimentTitles[session.experimentType] || 'PERFORMANCE SESSION';
 

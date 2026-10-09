@@ -5,17 +5,19 @@ import { ExperimentsHub } from './ExperimentsHub';
 import { ControllerLab } from './ControllerLab';
 import { ControllerIntegrationLab } from './ControllerIntegrationLab';
 import { SessionHistoryView } from './SessionHistoryView';
+import { PhoneGyroLab } from './phone/PhoneGyroLab';
 import {
   createInitialStickCalibration,
 } from '../utils/stickCalibration';
 import type { StickCalibrationData } from '../types/telemetry';
 import { ExternalLink } from 'lucide-react';
 
-export type MainNavTab = 'home' | 'experiments' | 'controller_lab' | 'integrations' | 'history';
+export type MainNavTab = 'home' | 'experiments' | 'phone_gyro' | 'controller_lab' | 'integrations' | 'history';
 
 export const ControllerDiagnosticsApp: React.FC = () => {
   const [activeTab, setActiveTab] = useState<MainNavTab>('home');
   const [initialExperiment, setInitialExperiment] = useState<'reaction' | 'target_acquisition' | 'continuous_tracking'>('reaction');
+  const [initialPhoneTest, setInitialPhoneTest] = useState<'steadiness' | 'balance' | 'proprioception'>('steadiness');
 
   const {
     controller,
@@ -61,7 +63,8 @@ export const ControllerDiagnosticsApp: React.FC = () => {
           <nav className="hidden md:flex items-center gap-1 bg-zinc-100 p-1 rounded-xl">
             {[
               { id: 'home', label: 'Home' },
-              { id: 'experiments', label: 'Experiments' },
+              { id: 'phone_gyro', label: 'Phone Gyro' },
+              { id: 'experiments', label: 'Controller Tests' },
               { id: 'controller_lab', label: 'Controller Lab' },
               { id: 'integrations', label: 'Integrations' },
               { id: 'history', label: 'History & Cards' },
@@ -99,8 +102,9 @@ export const ControllerDiagnosticsApp: React.FC = () => {
         <div className="flex md:hidden overflow-x-auto px-4 py-2 border-t border-zinc-100 gap-1 bg-white">
           {[
             { id: 'home', label: 'Home' },
-            { id: 'experiments', label: 'Experiments' },
-            { id: 'controller_lab', label: 'Controller' },
+            { id: 'phone_gyro', label: 'Phone Gyro' },
+            { id: 'experiments', label: 'Controller' },
+            { id: 'controller_lab', label: 'Lab' },
             { id: 'integrations', label: 'Integrations' },
             { id: 'history', label: 'History' },
           ].map((tab) => (
@@ -138,7 +142,15 @@ export const ControllerDiagnosticsApp: React.FC = () => {
             browserRenderHz={browserRenderHz}
             onNavigateTab={setActiveTab}
             onSelectExperiment={setInitialExperiment}
+            onSelectPhoneTest={(test) => {
+              setInitialPhoneTest(test);
+              setActiveTab('phone_gyro');
+            }}
           />
+        )}
+
+        {activeTab === 'phone_gyro' && (
+          <PhoneGyroLab initialTest={initialPhoneTest} />
         )}
 
         {activeTab === 'experiments' && (

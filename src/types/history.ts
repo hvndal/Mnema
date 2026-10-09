@@ -9,8 +9,16 @@
 import type { ReactionExperimentStats, RawTrialRecord } from './experiment';
 import type { TargetAcquisitionStats, RawAcquisitionTrialRecord, ContinuousTrackingStats, TrackingSample } from './precisionTracking';
 import type { StickCalibrationData } from './telemetry';
+import type { SteadinessResult, BalanceTestResult, ProprioceptionResult } from './phoneSensors';
 
-export type SessionExperimentType = 'reaction' | 'target_acquisition' | 'continuous_tracking' | 'diagnostics_calibration';
+export type SessionExperimentType =
+  | 'reaction'
+  | 'target_acquisition'
+  | 'continuous_tracking'
+  | 'diagnostics_calibration'
+  | 'phone_steadiness'
+  | 'phone_balance'
+  | 'phone_proprioception';
 
 export interface StoredSessionRecord {
   id: string; // Unique Session UUID/ID
@@ -34,6 +42,9 @@ export interface StoredSessionRecord {
     buttonCount: number;
     axisCount: number;
   };
+  steadinessResult?: SteadinessResult;
+  balanceResult?: BalanceTestResult;
+  proprioceptionResult?: ProprioceptionResult;
 
   // Optional raw trial archives (preserves raw observations separately)
   rawReactionTrials?: RawTrialRecord[];
