@@ -306,6 +306,24 @@ export const ReactionLab: React.FC<ReactionLabProps> = ({ controller, browserRen
           const stats = calculateExperimentStats(trialsHistoryRef.current, sessionId, mode);
           setExperimentSummary(stats);
           setPhase('summary');
+
+          // Persist session to local history
+          import('../utils/sessionStorage').then(({ saveSession }) => {
+            saveSession({
+              id: sessionId,
+              timestamp: new Date().toISOString(),
+              experimentType: 'reaction',
+              protocolVersion: stats.protocolVersion,
+              hardwareName: controller ? (controller.id.includes('EvoFox') ? 'EvoFox One S' : controller.id.slice(0, 24)) : 'Standard Gamepad',
+              controllerId: controller?.id || null,
+              settingsSummary: { mode },
+              sampleCount: stats.validHitsCount,
+              hasInterruptedTrials: trialsHistoryRef.current.some(t => !t.isValid),
+              dataQualityWarnings: stats.prematureCount > 3 ? ['High rate of premature anticipations recorded'] : [],
+              reactionStats: stats,
+              rawReactionTrials: trialsHistoryRef.current,
+            }).catch(console.error);
+          });
         }
       } else {
         scheduleNextTrial(nextTrial, isPractice);

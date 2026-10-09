@@ -230,6 +230,24 @@ export const TargetAcquisitionLab: React.FC<TargetAcquisitionLabProps> = ({ cont
           const stats = calculateTargetAcquisitionStats(trialsHistoryRef.current, sessionId);
           setStatsSummary(stats);
           setPhase('summary');
+
+          // Persist session to local history
+          import('../utils/sessionStorage').then(({ saveSession }) => {
+            saveSession({
+              id: sessionId,
+              timestamp: new Date().toISOString(),
+              experimentType: 'target_acquisition',
+              protocolVersion: '3.0-controller-precision-tracking',
+              hardwareName: controller ? (controller.id.includes('EvoFox') ? 'EvoFox One S' : controller.id.slice(0, 24)) : 'Standard Gamepad',
+              controllerId: controller?.id || null,
+              settingsSummary: { confirmButtonIndex },
+              sampleCount: stats.validHitsCount,
+              hasInterruptedTrials: trialsHistoryRef.current.some(t => !t.isValid),
+              dataQualityWarnings: stats.timeoutCount > 2 ? ['Noticeable rate of target timeouts'] : [],
+              acquisitionStats: stats,
+              rawAcquisitionTrials: trialsHistoryRef.current,
+            }).catch(console.error);
+          });
         }
       } else {
         startNextTrial(nextTrial, isPractice);

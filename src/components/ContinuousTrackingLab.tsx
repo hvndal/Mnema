@@ -181,6 +181,24 @@ export const ContinuousTrackingLab: React.FC<ContinuousTrackingLabProps> = ({ co
       );
       setTrackingSummary(stats);
       setPhase('summary');
+
+      // Persist session to local history
+      import('../utils/sessionStorage').then(({ saveSession }) => {
+        saveSession({
+          id: sessionId,
+          timestamp: new Date().toISOString(),
+          experimentType: 'continuous_tracking',
+          protocolVersion: '3.0-controller-precision-tracking',
+          hardwareName: controller ? (controller.id.includes('EvoFox') ? 'EvoFox One S' : controller.id.slice(0, 24)) : 'Standard Gamepad',
+          controllerId: controller?.id || null,
+          settingsSummary: { pattern, difficulty },
+          sampleCount: stats.totalSamplesRecorded,
+          hasInterruptedTrials: samplesRef.current.some(s => s.isInterrupted),
+          dataQualityWarnings: stats.timeInTargetPercentage < 35 ? ['Low target tracking accuracy'] : [],
+          trackingStats: stats,
+          rawTrackingSamples: samplesRef.current,
+        }).catch(console.error);
+      });
     }
   };
 
