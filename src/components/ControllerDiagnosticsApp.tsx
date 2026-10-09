@@ -4,6 +4,7 @@ import { ReactionLab } from './ReactionLab';
 import { TargetAcquisitionLab } from './TargetAcquisitionLab';
 import { ContinuousTrackingLab } from './ContinuousTrackingLab';
 import { SessionHistoryView } from './SessionHistoryView';
+import { ControllerIntegrationLab } from './ControllerIntegrationLab';
 import {
   createInitialStickCalibration,
   updateCenterCalibration,
@@ -17,7 +18,7 @@ import {
 import type { TelemetryFrame, StickCalibrationData } from '../types/telemetry';
 
 export const ControllerDiagnosticsApp: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'reaction_lab' | 'target_acquisition' | 'continuous_tracking' | 'history' | 'diagnostics'>('history');
+  const [activeTab, setActiveTab] = useState<'reaction_lab' | 'target_acquisition' | 'continuous_tracking' | 'integration_lab' | 'history' | 'diagnostics'>('integration_lab');
   const {
     controller,
     allConnectedGamepads,
@@ -175,6 +176,16 @@ export const ControllerDiagnosticsApp: React.FC = () => {
             🔄 CONTINUOUS TRACKING
           </button>
           <button
+            onClick={() => setActiveTab('integration_lab')}
+            className={`px-3 py-1.5 rounded text-xs font-bold cursor-pointer ${
+              activeTab === 'integration_lab'
+                ? 'bg-purple-600 text-white shadow'
+                : 'bg-neutral-950 text-neutral-400 border border-neutral-800 hover:text-white'
+            }`}
+          >
+            🎛️ INTEGRATION LAB
+          </button>
+          <button
             onClick={() => setActiveTab('history')}
             className={`px-3 py-1.5 rounded text-xs font-bold cursor-pointer ${
               activeTab === 'history'
@@ -217,6 +228,11 @@ export const ControllerDiagnosticsApp: React.FC = () => {
       {/* Render Continuous Tracking Lab Tab */}
       {activeTab === 'continuous_tracking' && (
         <ContinuousTrackingLab controller={controller} browserRenderHz={browserRenderHz} />
+      )}
+
+      {/* Render Controller Integration Lab Tab */}
+      {activeTab === 'integration_lab' && (
+        <ControllerIntegrationLab controller={controller} browserRenderHz={browserRenderHz} />
       )}
 
       {/* Render Session History & Comparison Tab */}
