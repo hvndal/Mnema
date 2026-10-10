@@ -2,18 +2,22 @@
 
 @layer base {
   :root {
-    --bg-primary: #fcfcfd;
-    --bg-secondary: #f4f4f7;
-    --border-color: #e5e5ea;
-    --text-primary: #18181b;
-    --text-muted: #71717a;
-    --accent-purple: #7c3aed;
-    --accent-purple-light: #f5f3ff;
+    --bg-primary: #09090b;
+    --bg-surface: #111318;
+    --bg-elevated: #181b22;
+    --border-color: #27272a;
+    --text-primary: #f4f4f5;
+    --text-muted: #a1a1aa;
+    
+    --phosphor-green: #22c55e;
+    --phosphor-amber: #f59e0b;
+    --arcade-cyan: #06b6d4;
+    --laser-rose: #f43f5e;
   }
 
   body {
-    background-color: #fbfbfd;
-    color: #18181b;
+    background-color: #09090b;
+    color: #f4f4f5;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -21,18 +25,103 @@
   }
 }
 
-/* Custom interactive utility classes */
-.card-subtle {
-  background-color: #ffffff;
-  border: 1px solid #e4e4e7;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.04);
+/* Typography Utility Classes */
+.font-arcade {
+  font-family: 'Silkscreen', monospace;
+  letter-spacing: -0.02em;
 }
 
-.card-interactive {
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+.font-pixel {
+  font-family: 'Press Start 2P', monospace;
 }
 
-.card-interactive:hover {
-  border-color: #c4b5fd;
-  box-shadow: 0 4px 12px -2px rgba(124, 58, 237, 0.08);
+.font-telemetry {
+  font-family: 'Space Mono', 'JetBrains Mono', monospace;
+}
+
+.font-vt {
+  font-family: 'VT323', monospace;
+}
+
+/* Phosphor Glow Utilities */
+.glow-green {
+  text-shadow: 0 0 10px rgba(34, 197, 94, 0.45), 0 0 20px rgba(34, 197, 94, 0.2);
+}
+
+.glow-amber {
+  text-shadow: 0 0 10px rgba(245, 158, 11, 0.45), 0 0 20px rgba(245, 158, 11, 0.2);
+}
+
+.glow-cyan {
+  text-shadow: 0 0 10px rgba(6, 182, 212, 0.45), 0 0 20px rgba(6, 182, 212, 0.2);
+}
+
+.glow-rose {
+  text-shadow: 0 0 10px rgba(244, 63, 94, 0.45), 0 0 20px rgba(244, 63, 94, 0.2);
+}
+
+.box-glow-green {
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.15), inset 0 0 12px rgba(34, 197, 94, 0.05);
+}
+
+.box-glow-amber {
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.15), inset 0 0 12px rgba(245, 158, 11, 0.05);
+}
+
+.box-glow-cyan {
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.15), inset 0 0 12px rgba(6, 182, 212, 0.05);
+}
+
+/* 8-Bit Pixel Corners & Panels */
+.pixel-panel {
+  background-color: #12141a;
+  border: 1px solid #27272a;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  position: relative;
+}
+
+.pixel-panel-green {
+  background-color: #0d1210;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  box-shadow: 0 0 24px rgba(34, 197, 94, 0.08);
+}
+
+.pixel-btn {
+  position: relative;
+  transition: all 0.12s steps(2);
+  cursor: pointer;
+  user-select: none;
+}
+
+.pixel-btn:hover {
+  filter: brightness(1.15);
+}
+
+.pixel-btn:active {
+  transform: translateY(2px);
+}
+
+/* CRT Screen Shader Overlay */
+.crt-scanlines {
+  background: linear-gradient(
+    rgba(18, 16, 16, 0) 50%,
+    rgba(0, 0, 0, 0.22) 50%
+  );
+  background-size: 100% 3px;
+  pointer-events: none;
+}
+
+.crt-vignette {
+  background: radial-gradient(
+    circle at center,
+    transparent 65%,
+    rgba(0, 0, 0, 0.45) 100%
+  );
+  pointer-events: none;
+}
+
+/* Micro-dither matrix pattern for retro depth */
+.bg-dither-matrix {
+  background-image: radial-gradient(#27272a 0.75px, transparent 0.75px);
+  background-size: 12px 12px;
 }

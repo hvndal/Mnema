@@ -1,0 +1,173 @@
+{
+  "$name": "Mnema Arcade Phosphor CRT Design Tokens",
+  "$version": "1.0.0",
+  "$description": "W3C / Tokens Studio for Figma design tokens for Mnema Psychophysics & Physical Sensor Lab",
+  "global": {
+    "color": {
+      "chassis-base": {
+        "value": "#09090b",
+        "type": "color",
+        "description": "Deep obsidian carbon chassis"
+      },
+      "chassis-surface": {
+        "value": "#12141a",
+        "type": "color",
+        "description": "Arcade panel card background"
+      },
+      "chassis-elevated": {
+        "value": "#181b22",
+        "type": "color",
+        "description": "Elevated telemetry surface"
+      },
+      "chassis-border": {
+        "value": "#27272a",
+        "type": "color",
+        "description": "Hairline structural panel seam"
+      },
+      "phosphor-green": {
+        "value": "#22c55e",
+        "type": "color",
+        "description": "Primary active phosphor green, 60fps lock"
+      },
+      "phosphor-green-glow": {
+        "value": "rgba(34, 197, 94, 0.2)",
+        "type": "color",
+        "description": "Cathode ray bloom glow"
+      },
+      "cyber-amber": {
+        "value": "#f59e0b",
+        "type": "color",
+        "description": "Warning, secondary telemetry, calibration"
+      },
+      "cyber-amber-glow": {
+        "value": "rgba(245, 158, 11, 0.2)",
+        "type": "color",
+        "description": "Amber tube glow"
+      },
+      "arcade-cyan": {
+        "value": "#06b6d4",
+        "type": "color",
+        "description": "Angular velocity & vector orientation"
+      },
+      "arcade-cyan-glow": {
+        "value": "rgba(6, 182, 212, 0.2)",
+        "type": "color",
+        "description": "Cyan vector trace glow"
+      },
+      "laser-rose": {
+        "value": "#f43f5e",
+        "type": "color",
+        "description": "Fault trigger, false start, seismic strike"
+      },
+      "arcade-violet": {
+        "value": "#8b5cf6",
+        "type": "color",
+        "description": "Sensor fusion and acoustic modal marker"
+      },
+      "ink-primary": {
+        "value": "#f4f4f5",
+        "type": "color",
+        "description": "Crisp phosphor white primary text"
+      },
+      "ink-secondary": {
+        "value": "#a1a1aa",
+        "type": "color",
+        "description": "Muted hardware labels and metric units"
+      },
+      "ink-dim": {
+        "value": "#52525b",
+        "type": "color",
+        "description": "Inactive grid lines and guide axes"
+      }
+    },
+    "fontFamilies": {
+      "arcade-display": {
+        "value": "Silkscreen, monospace",
+        "type": "fontFamilies",
+        "description": "Arcade header, marquee, and badges"
+      },
+      "arcade-pixel": {
+        "value": "'Press Start 2P', monospace",
+        "type": "fontFamilies",
+        "description": "8-bit retro gaming accents"
+      },
+      "telemetry-mono": {
+        "value": "'JetBrains Mono', 'Space Mono', monospace",
+        "type": "fontFamilies",
+        "description": "High-density data and timers"
+      },
+      "interface-sans": {
+        "value": "Inter, system-ui, sans-serif",
+        "type": "fontFamilies",
+        "description": "Body text and descriptions"
+      }
+    },
+    "fontSizes": {
+      "2xs": { "value": "10px", "type": "fontSizes" },
+      "xs": { "value": "12px", "type": "fontSizes" },
+      "sm": { "value": "14px", "type": "fontSizes" },
+      "base": { "value": "16px", "type": "fontSizes" },
+      "lg": { "value": "18px", "type": "fontSizes" },
+      "xl": { "value": "20px", "type": "fontSizes" },
+      "2xl": { "value": "24px", "type": "fontSizes" },
+      "3xl": { "value": "30px", "type": "fontSizes" },
+      "4xl": { "value": "36px", "type": "fontSizes" }
+    },
+    "spacing": {
+      "1": { "value": "4px", "type": "spacing" },
+      "2": { "value": "8px", "type": "spacing" },
+      "3": { "value": "12px", "type": "spacing" },
+      "4": { "value": "16px", "type": "spacing" },
+      "5": { "value": "20px", "type": "spacing" },
+      "6": { "value": "24px", "type": "spacing" },
+      "8": { "value": "32px", "type": "spacing" },
+      "10": { "value": "40px", "type": "spacing" },
+      "12": { "value": "48px", "type": "spacing" },
+      "16": { "value": "64px", "type": "spacing" }
+    },
+    "borderRadius": {
+      "none": { "value": "0px", "type": "borderRadius" },
+      "xs": { "value": "4px", "type": "borderRadius" },
+      "sm": { "value": "6px", "type": "borderRadius" },
+      "md": { "value": "10px", "type": "borderRadius" },
+      "lg": { "value": "16px", "type": "borderRadius" },
+      "xl": { "value": "24px", "type": "borderRadius" },
+      "full": { "value": "9999px", "type": "borderRadius" }
+    },
+    "boxShadow": {
+      "phosphor-green-glow": {
+        "value": {
+          "x": "0",
+          "y": "0",
+          "blur": "16px",
+          "spread": "0",
+          "color": "rgba(34, 197, 94, 0.28)",
+          "type": "dropShadow"
+        },
+        "type": "boxShadow"
+      },
+      "cyber-amber-glow": {
+        "value": {
+          "x": "0",
+          "y": "0",
+          "blur": "16px",
+          "spread": "0",
+          "color": "rgba(245, 158, 11, 0.28)",
+          "type": "dropShadow"
+        },
+        "type": "boxShadow"
+      },
+      "arcade-panel": {
+        "value": {
+          "x": "0",
+          "y": "4px",
+          "blur": "24px",
+          "spread": "-4px",
+          "color": "rgba(0, 0, 0, 0.6)",
+          "type": "dropShadow"
+        },
+        "type": "boxShadow"
+      }
+    }
+  }
+}
