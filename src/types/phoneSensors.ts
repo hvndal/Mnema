@@ -15,6 +15,8 @@ export interface MotionSample {
   rotAlpha?: number; // deg/s
   rotBeta?: number;
   rotGamma?: number;
+  accelerationIncludingGravity?: { x?: number; y?: number; z?: number };
+  rotationRate?: { alpha?: number; beta?: number; gamma?: number };
 }
 
 export interface OrientationSample {

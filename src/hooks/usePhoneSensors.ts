@@ -166,6 +166,16 @@ export function usePhoneSensors(): UsePhoneSensorsReturn {
         rotAlpha: event.rotationRate?.alpha ?? undefined,
         rotBeta: event.rotationRate?.beta ?? undefined,
         rotGamma: event.rotationRate?.gamma ?? undefined,
+        accelerationIncludingGravity: {
+          x: event.accelerationIncludingGravity?.x ?? ax,
+          y: event.accelerationIncludingGravity?.y ?? ay,
+          z: event.accelerationIncludingGravity?.z ?? (az + 9.81),
+        },
+        rotationRate: {
+          alpha: event.rotationRate?.alpha ?? 0,
+          beta: event.rotationRate?.beta ?? 0,
+          gamma: event.rotationRate?.gamma ?? 0,
+        },
       };
 
       setLatestMotion(sample);
@@ -222,6 +232,16 @@ export function usePhoneSensors(): UsePhoneSensorsReturn {
         accelY: tremorSignal * 0.7,
         accelZ: 9.81 + tremorSignal * 0.4,
         magnitude: Math.abs(tremorSignal),
+        accelerationIncludingGravity: {
+          x: tremorSignal,
+          y: tremorSignal * 0.7,
+          z: 9.81 + tremorSignal * 0.4,
+        },
+        rotationRate: {
+          alpha: tremorSignal * 8.5,
+          beta: tremorSignal * 6.2,
+          gamma: tremorSignal * 4.8,
+        },
       };
 
       setLatestMotion(motionSample);

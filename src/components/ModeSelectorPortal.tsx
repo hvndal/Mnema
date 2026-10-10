@@ -110,13 +110,13 @@ export const ModeSelectorPortal: React.FC<ModeSelectorPortalProps> = ({
 
             <div>
               <span className="text-[11px] font-bold text-violet-600 uppercase tracking-wider block mb-1">
-                Mobile Sensors Edition
+                Smartphone Sensor & Psychophysics Edition
               </span>
               <h2 className="text-2xl font-bold text-zinc-900 group-hover:text-violet-600 transition-colors">
-                Phone Gyroscope Psychophysics
+                Phone Gyroscope & Physical Sensor Lab
               </h2>
               <p className="text-xs text-zinc-500 mt-1 leading-relaxed">
-                Zero installation required. Runs directly in mobile Safari or Chrome off DeviceMotionEvent &amp; DeviceOrientationEvent.
+                Zero installation. Turn your smartphone into a physical computing lab: Gyroscope, Accelerometer, Magnetometer, Barometer, Ultrasound Sonar, Camera PPG, and Sensor Fusion.
               </p>
             </div>
 
@@ -124,29 +124,29 @@ export const ModeSelectorPortal: React.FC<ModeSelectorPortalProps> = ({
             <div className="grid grid-cols-2 gap-2 text-xs pt-2">
               <div className="p-2.5 rounded-xl bg-violet-50/50 border border-violet-100 flex items-center gap-2">
                 <Activity className="w-4 h-4 text-violet-600 shrink-0" />
-                <span className="font-semibold text-zinc-700">Tremor Spectrum (8–12 Hz FFT)</span>
+                <span className="font-semibold text-zinc-700">14 Neuromotor Psychophysics Tests</span>
               </div>
               <div className="p-2.5 rounded-xl bg-emerald-50/50 border border-emerald-100 flex items-center gap-2">
                 <Compass className="w-4 h-4 text-emerald-600 shrink-0" />
-                <span className="font-semibold text-zinc-700">Romberg Balance Sway Map</span>
+                <span className="font-semibold text-zinc-700">RPM Tachometer & Swing Analyser</span>
               </div>
               <div className="p-2.5 rounded-xl bg-amber-50/50 border border-amber-100 flex items-center gap-2">
                 <Target className="w-4 h-4 text-amber-600 shrink-0" />
-                <span className="font-semibold text-zinc-700">Blind Tilt &amp; Mirror Match</span>
+                <span className="font-semibold text-zinc-700">Metal Detector & Barometer Floors</span>
               </div>
               <div className="p-2.5 rounded-xl bg-purple-50/50 border border-purple-100 flex items-center gap-2">
                 <Brain className="w-4 h-4 text-purple-600 shrink-0" />
-                <span className="font-semibold text-zinc-700">Dual-Task Cognitive Cost</span>
+                <span className="font-semibold text-zinc-700">Ultrasound Sonar & Doppler Radar</span>
               </div>
             </div>
           </div>
 
           <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
             <span className="text-xs font-semibold text-zinc-400">
-              14 Neuromotor Tests Included
+              31 Laboratory Experiments Included
             </span>
             <div className="inline-flex items-center gap-2 text-sm font-bold text-violet-600 group-hover:translate-x-1 transition-transform">
-              Enter Gyroscope Lab <ArrowRight className="w-4 h-4" />
+              Enter Sensor & Gyro Lab <ArrowRight className="w-4 h-4" />
             </div>
           </div>
         </div>

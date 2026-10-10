@@ -8,7 +8,19 @@
  * Plus Presentation & Social (Before/After, 2-Player Duel, Signature Card)
  */
 
-export type GyroDomain = 'body_control' | 'body_sense' | 'timing_movement' | 'brain_load' | 'presentation_social';
+export type GyroDomain =
+  | 'body_control'
+  | 'body_sense'
+  | 'timing_movement'
+  | 'brain_load'
+  | 'presentation_social'
+  | 'gyroscope_lab'
+  | 'accelerometer_lab'
+  | 'magnetometer_lab'
+  | 'barometer_lab'
+  | 'acoustic_lab'
+  | 'optical_lab'
+  | 'sensor_fusion_lab';
 
 export type GyroTestId =
   // Body Control
@@ -32,7 +44,38 @@ export type GyroTestId =
   | 'fatigue_curve'
   // Presentation & Social
   | 'before_after_mode'
-  | 'two_player_duel';
+  | 'two_player_duel'
+  // Gyroscope Lab
+  | 'rpm_meter'
+  | 'swing_analyser'
+  | 'air_writing'
+  | 'keystroke_leak'
+  // Accelerometer Lab
+  | 'physics_lab'
+  | 'seismocardiography'
+  | 'earthquake_network'
+  | 'road_roughness'
+  // Magnetometer Lab
+  | 'metal_detector'
+  | 'indoor_magnetic_atlas'
+  | 'magnetic_switch'
+  // Barometer Lab
+  | 'barometer_floor'
+  | 'room_event_pressure'
+  // Acoustic Lab
+  | 'ultrasonic_sonar'
+  | 'doppler_gesture'
+  | 'data_over_sound'
+  | 'acoustic_spirometry'
+  // Optical Lab
+  | 'camera_pulse_ppg'
+  | 'particle_detector'
+  | 'optical_spectrometer'
+  | 'infrared_viewer'
+  // Sensor Fusion Lab
+  | 'dead_reckoning'
+  | 'surface_classifier'
+  | 'sensor_id_fingerprint';
 
 // 1. Tandem Walk Result
 export interface TandemWalkResult {
